@@ -1,15 +1,16 @@
-# Use the actual available Debian-based n8n image
-FROM n8nio/n8n:latest-debian
+# Use official n8n latest with TelePilot support
+FROM n8nio/n8n:latest
 
-# Switch to root to install custom node
-USER root
+# Install TelePilot using official method
+RUN cd ~/.n8n/ && mkdir -p nodes && cd nodes && npm install @telepilotco/n8n-nodes-telepilot
 
-# Install Telepilot node in the correct location
-RUN cd /usr/local/lib/node_modules/n8n && \
-    npm install @telepilotco/n8n-nodes-telepilot
+# Verify installation
+RUN ls -la ~/.n8n/nodes/
 
-# Switch back to n8n user
-USER node
+# Set environment for Railway
+ENV N8N_HOST=0.0.0.0
+ENV N8N_PORT=5678
+ENV N8N_WORKERS_ENABLED=false
 
-# Start worker
-CMD ["n8n", "worker"]
+# Use default entrypoint
+ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
